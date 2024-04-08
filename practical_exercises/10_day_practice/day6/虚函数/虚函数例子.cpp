@@ -1,4 +1,3 @@
-
 //Eg7-1.cpp
 //基类指针或引用指向派生类对象时,虚函数与非虚函数区别：
 //声明Employee的print为虚函数，则可访问到Manager的print函数，非虚函数，则只能访问到Employee的print

@@ -26,7 +26,7 @@ Counter operator--(Counter &c){
     return c;
 }
 Counter operator--(Counter &c,int){
-    Counter t=*this;
+    Counter t=c;
     c.n--;
     return t;
 }
@@ -38,7 +38,7 @@ int main(int argc, char const *argv[])
     Counter a;
     ++a;
     a.display();
-    a++;
+    a++.display();
     a.display();
     --a;
     a.display();

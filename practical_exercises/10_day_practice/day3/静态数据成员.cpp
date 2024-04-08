@@ -15,8 +15,9 @@ public:
 	int GetX() {return X;}
 	int GetY() {return Y;}
 	void GetC() {cout<<" Object id="<<countP<<endl;}
+	int Getm() {return m;}
 private:	
-	int X,Y;
+	int X,Y, m = 1;
     //静态数据成员，必须在外部定义和初始化，内部不能直接初始化！
 	static int countP;
 };
@@ -29,11 +30,11 @@ Point::Point(Point &p)
 int Point::countP=0; 
 int main()	
 {	Point A(4,5);	
-	cout<<"Point A,"<<A.GetX()<<","<<A.GetY();
+	cout<<"Point A,"<<A.GetX()<<","<<A.GetY()<<","<<A.Getm();
 	A.GetC();	
 	Point B(A);	
-	cout<<"Point B,"<<B.GetX()<<","<<B.GetY();
-	B.GetC();	
+	cout<<"Point B,"<<B.GetX()<<","<<B.GetY()<<","<<A.Getm();
+	B.GetC();
     system("pause");
     return 0;
 }

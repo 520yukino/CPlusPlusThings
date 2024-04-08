@@ -3,8 +3,9 @@ using namespace std;
 class B{
 public: 
     void f(){ g(); } 
-    virtual void g(){ cout << "B::g"; }
+    virtual void g();
 };
+void B::g(){ cout << "B::g"; }
 class D : public B{
 public: 
     void g(){ cout << "D::g\n"; }

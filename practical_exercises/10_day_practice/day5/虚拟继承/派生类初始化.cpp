@@ -23,7 +23,7 @@ public:
 class ABC:public C, public B {
 public: 
     //虚基类由最终派生类初始化 
-    ABC(int i,int j,int k):C(i),B(j),A(i) //L1，这里必须对A进行初始化
+    ABC(int i,int j,int k): B(j), C(i), A(i) //L1，这里必须对A进行初始化
         { cout<<"Constructing ABC..."<<endl; }
 }; 
 int main(){

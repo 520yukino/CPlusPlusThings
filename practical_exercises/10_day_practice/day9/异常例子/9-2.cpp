@@ -26,10 +26,10 @@ int main()
     {
         //        .....  //程序代码
         DiskNotFound err;
-        throw &err;
+        throw err;
     }
-    catch (BasicException *p)
+    catch (BasicException p)
     {
-        cout << p->Where() << endl;
+        cout << p.Where() << endl;
     }
 }

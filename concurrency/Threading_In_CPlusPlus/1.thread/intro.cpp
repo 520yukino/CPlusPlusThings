@@ -36,6 +36,6 @@ int main() {
 
     cout << "OddSum : " << OddSum << endl;
     cout << "EvenSum: " << EvenSum << endl;
-    cout << "Sec: " << duration.count() / 1000000 << endl;
+    cout << "Sec: " << (double)duration.count() / 1000000 << endl;
     return 0;
 }

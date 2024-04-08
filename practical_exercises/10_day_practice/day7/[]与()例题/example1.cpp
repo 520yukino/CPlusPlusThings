@@ -10,7 +10,7 @@ class X
 	int operator[] (int i)
 	{ cout << "X::operator[" << i << "]" << endl; return i; };
 	int operator[] (char * cp)
-	{ cout << "X::operator[" << cp << "]" << endl; return 0; };
+	{ cout << "X::operator[" << cp << "]" << endl; return *cp; };
 };
 int main (void)
 {	X obj;	int i = obj (obj (1), 2);

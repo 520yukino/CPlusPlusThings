@@ -1,0 +1,1 @@
+This is a test file, sender.exe send this file contents and receiver.exe will receive it then output to stdout.

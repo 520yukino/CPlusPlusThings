@@ -4,7 +4,7 @@ using namespace std;
 class A {
     int a;
 public: 
-    A(){ cout<<"Constructing A"<<endl; }
+    A(){ cout<<"Constructing A"<<endl<<1; }
 }; 
 class B {
 public: 

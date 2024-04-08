@@ -1,4 +1,5 @@
 #include<iostream>
+#include <iomanip>
 using namespace std;
 double arctan(double x);
 int main(int argc, char const *argv[])
@@ -6,7 +7,7 @@ int main(int argc, char const *argv[])
     double a = 16.0*arctan(1.0/5.0);
     double b = 4.0*arctan(1.0/239.0);
     double pi = a-b;
-    cout<<pi<<endl;
+    cout<<setprecision(100)<<pi<<endl;
     system("pause");
     return 0;
 }

@@ -1,0 +1,13 @@
+numStudents: 2, numCourses: 2
+ID: 3
+Name: xhy
+Course 1: 22
+Course 2: 3
+Total Score: 25
+Average Score: 12.50
+ID: 8
+Name: yukino
+Course 1: 99
+Course 2: 88
+Total Score: 187
+Average Score: 93.50

@@ -6,7 +6,7 @@ int main(int argc, char const *argv[])
 {
     int flag;
     unsigned seed;
-    cout<<"è¯·è¾“å…¥æ— ç¬¦å·æ•´æ•°ï¼š"<<endl;
+    cout<<"ÇëÊäÈëÎŞ·ûºÅÕûÊı£º"<<endl;
     cin>>seed;
     srand(seed);
     int sum = rolldice();

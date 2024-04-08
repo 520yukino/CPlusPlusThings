@@ -5,5 +5,6 @@
         "stdio.h": "c"
     },
     "cmake.sourceDirectory": "${workspaceFolder}/basic_content/extern/extern_c++",
-    "cmake.cmakePath": "D:/Ubuntu/Ubuntu_2204.0.10.0_x64/rootfs/usr/bin/cmake"
+    "cmake.cmakePath": "D:/Ubuntu/Ubuntu_2204.0.10.0_x64/rootfs/usr/bin/cmake",
+    "C_Cpp.default.compilerPath": "D:\\VS Code\\mingw64\\bin\\gcc.exe"
 }

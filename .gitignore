@@ -1,1 +1,4 @@
 com.sh
+**.exe
+**.out
+/myself/**/build/

@@ -40,14 +40,14 @@ template<class T> void Array<T>::Sort(){
     }
 }
 //template <> 返回类型 类模板名<特化的数据类型>::特化成员函数名(参数表){}
-template<> void Array<char *>::Sort(){
+template<> void Array<const char *>::Sort(){
     int p;
     for(int i=0;i<Size-1;i++){
         p=i;
         for(int j=i+1;j<Size;j++)
             if(strcmp(a[p],a[j])<0)
                 p=j;
-        char* t=a[p];
+        const char* t=a[p];
         a[p]=a[i];
         a[i]=t;
     }
@@ -55,18 +55,18 @@ template<> void Array<char *>::Sort(){
 
 int main(){
     Array<int> a1;
-    Array<char*>b1;
+    Array<const char*>b1;
     a1[0]=1;a1[1]=23;a1[2]=6;
     a1[3]=3; a1[4]=9; 	
     a1.Sort();
     for(int i=0;i<5;i++) 
-    cout<<a1[i]<<"\t";
+        cout<<a1[i]<<"\t";
     cout<<endl;	
     b1[0]="x1";	b1[1]="ya";	b1[2]="ad";
     b1[3]="be";	b1[4]="bc";	
     b1.Sort();
     for(int i=0;i<5;i++)
-    cout<<b1[i]<<"\t";
+        cout<<b1[i]<<"\t";
     cout<<endl;	
     system("pause");
 }

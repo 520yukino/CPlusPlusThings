@@ -25,6 +25,7 @@ public:
         return *this;
     };                                         //重载赋值运算符 =
     const String &operator+=(const String &R); //字符串的连接 +=
+    friend const String operator+(const String &S, const String &R); //字符串的连接 +
     bool operator==(const String &R);          //字符串的相等比较 ==
     bool operator!=(const String &R);          //字符串的不等比较 !=
     bool operator!();                          //判定字符串是否为空
@@ -43,6 +44,10 @@ const String &String::operator+=(const String &R)
     strcat(sPtr, R.sPtr);
     delete[] temp;
     return *this;
+}
+const String operator+(const String &S, const String &R)
+{
+    return strcat(S.sPtr, R.sPtr);
 }
 String::String(const char *str)
 {
@@ -76,10 +81,10 @@ int main()
         cout << "s3=" << s3 << "\n"; //L5
     }
     cout << "s1 += s2 的结果是：s1="; //L6
-    s1 += s2;
+    s1 += " "+s2; //调用+和+=
     cout << s1; //L7
 
-    cout << "\ns1 +=  to you 的结果是："; //L8
+    cout << "\ns1 += to you 的结果是："; //L8
     s1 += " to you";
     cout << "s1 = " << s1 << endl; //L9
     s1[0] = 'H';

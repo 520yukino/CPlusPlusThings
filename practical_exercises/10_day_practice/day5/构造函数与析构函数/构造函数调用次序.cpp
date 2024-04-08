@@ -31,7 +31,7 @@ public:
     A *a1 = new A(10);
     A a0,a4;
     D( ) : a4(4),c2(2),c1(1),B(1) {
-cout << "D-----5"<<endl;
+        cout << "D-----5"<<endl;
     }
 };
 int main(){
