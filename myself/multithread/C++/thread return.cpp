@@ -6,7 +6,7 @@ using namespace std;
 
 int f1(int &n)
 {
-    for (int i = 0; i < 5; ++i)
+    for (int i = 0; i < 3; ++i)
     {
         std::cout << "Thread 2 executing\n";
     }
@@ -30,8 +30,8 @@ int main()
                     { result = f1(n); });
     t1->join();
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    printf("############\t%d\n", result);
 
+    printf("############\t%d\n", result);
     std::promise<int> promiseObj; //定义promise
     std::future<int> futureObj(promiseObj.get_future()); //绑定future
     std::thread t2(f2, std::ref(promiseObj)); //传入promise

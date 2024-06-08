@@ -69,17 +69,17 @@ int main()
     pthread_mutex_init(&mut, NULL);
     pthread_cond_init(&cond, NULL);
     srand(time(NULL));
-    size_t procount = 5, cuscount = 3; //生成者和消费者数量
+    size_t procount = 5, cuscount = 6; //生成者和消费者数量
     pthread_t propt[procount], cuspt[cuscount];
     for (size_t i = 0; i < procount; i++)
     {
         pthread_create(&propt[i], NULL, Func_pro, NULL);
     }
-    usleep(200000);
+    usleep(RAND_MAX*1);
     for (size_t i = 0; i < cuscount; i++)
     {
         pthread_create(&cuspt[i], NULL, Func_cus, NULL);
     }
-    sleep(1);
+    usleep(RAND_MAX*20);
     return 0;
 }

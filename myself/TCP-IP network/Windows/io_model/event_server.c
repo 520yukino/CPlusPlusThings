@@ -5,7 +5,7 @@
 //异步是指添加事件和等待事件发生是分开的，指定监视对象后可以先做其它事情，而后再来检查事件状态。而像select则是添加和等待于一体，什么时候发生就什么时候返回
 
 #define ErrorPuts(s) do { \
-    printf("%s ErrorCode %d\n", s, GetLastError()); \
+    printf("%s ErrorCode %lu\n", s, GetLastError()); \
     exit(-1); \
 } while(0)
 
@@ -84,6 +84,7 @@ int main(int argc, char *args[])
                 sockcount++;
                 send(clisock, reply_1, sizeof(reply_1), 0);
                 printf("new client %llu\n", clisock);
+                continue; //服务端只需要accept，后续是客户端的事件
             }
             if (netevent.lNetworkEvents & FD_READ) { //可读，这里没有采用循环读入至清空缓冲区，所以可能发生缓冲区尚未读空就关闭的现象
                 if (netevent.iErrorCode[FD_READ_BIT]) {
@@ -91,7 +92,7 @@ int main(int argc, char *args[])
                     continue;
                 }
                 if ((len = recv(sockarr[i], message, SIZE, 0)) == -1) {
-                    printf("client %llu read() failed!\n", sockarr[i]);
+                    printf("client %llu recv() failed!\n", sockarr[i]);
                     F_CloseConnect(sockarr, eventarr, i, sockcount--);
                     continue;
                 }
@@ -106,7 +107,7 @@ int main(int argc, char *args[])
                 }
                 send(sockarr[i], reply_2, sizeof(reply_2), 0);
                 printf("close client %llu\n", sockarr[i]);
-                F_CloseConnect(sockarr, eventarr, i, sockcount--);
+                F_CloseConnect(sockarr, eventarr, i, --sockcount); //要提前自减sockcount，因为函数内部会将其当做尾部元素下标来使用
             }
         }
     }

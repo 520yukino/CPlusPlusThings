@@ -58,8 +58,8 @@ int main(int argc, char* args[])
             puts("timeout...");
             continue;
         }
-        
-        for (int i = 0; i<=fdmax; i++) //查询所有可读的fd
+
+        for (int i = 0; i <= fdmax; i++) //查询所有可读的fd
         {
             if (FD_ISSET(i, &fdtemp)) {
                 if (i == sersock) { //服务器fd可读，说明有客户端请求连接

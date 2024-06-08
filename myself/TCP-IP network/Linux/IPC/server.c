@@ -6,7 +6,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/wait.h>
-//根据multipro_server.c修改而来的基于IPC的服务端，可以将客户端的内容同步输出到文件内
+//根据../multiproc/server.c修改而来的基于IPC的服务端，可以将客户端的内容同步输出到文件内
 
 #define errorputs(s) do { \
     fputs(s, stderr); \
@@ -40,7 +40,7 @@ int main(int argc, char* args[])
         printf("Usage: %s: invalid argc!\n", args[0]);
         exit(-1);
     }
-    struct sigaction sa;
+    struct sigaction sa; //设置子进程退出的信号处理
     sa.sa_handler = F_SignChild;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = 0;
@@ -61,6 +61,7 @@ int main(int argc, char* args[])
     pid = fork();
     if (pid == 0) //子进程，将客户端内容记录到文件
     {
+        close(sersock); //多出1个服务端fd，实际上对于本程序没有影响，服务端套接字本就是在程序结束时关闭
         FILE *file = fopen("message.txt", "wt");
         char fmsgbuf[SIZE];
         int len;
@@ -71,10 +72,10 @@ int main(int argc, char* args[])
             fflush(file);
         }
         fclose(file);
-        return 1; //第一个子进程退出
+        return 1; //文件处理子进程退出
     }
     
-    while (1) //服务端与客户端循环连接的主体
+    while (1) //主进程，服务端与客户端循环连接的主体
     {
         if ((clisock = accept(sersock, (struct sockaddr*)(&cliaddr), &szcliaddr)) == -1) {
             continue;
@@ -95,7 +96,7 @@ int main(int argc, char* args[])
             close(clisock);
             sleep(2);
             puts("client disconnected...");
-            return 2; //第二个子进程退出
+            return 2; //客户端子进程退出
         }
         close(clisock);
     }

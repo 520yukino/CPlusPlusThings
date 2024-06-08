@@ -31,32 +31,33 @@ void F_SignChild(int sig)
 int main()
 {
     struct sigaction sa; //sigaction结构，储存信号处理有关设定的3个成员，第1个为信号发生时执行的函数指针，后2个指定选项和特性
-    sa.sa_handler = F_SignAlarm; //设置SIGALRM信号对应的响应函数
     sigemptyset(&sa.sa_mask); //第二个参数设空，下面的第三个同理
     sa.sa_flags = 0;
-    sigaction(SIGALRM, &sa, NULL); //调用sigaction函数设置对应信号发生时的处理手段，第3个参数可获取之前注册的sigaction结构
-    alarm(1); //设置多少秒后发出SIGALRM
 
+    sa.sa_handler = F_SignAlarm; //设置SIGALRM信号对应的响应函数
+    sigaction(SIGALRM, &sa, NULL); //调用sigaction函数设置对应信号发生时的处理手段，第3个参数可获取之前注册的sigaction结构
     sa.sa_handler = F_SignInterrupt;
     sigaction(SIGINT, &sa, NULL); //设置按下Ctrl+C中断进程指令时执行的函数，注意此设置会覆盖系统原有的中断操作进而只执行设置的函数内容
-
-    pid_t pid = fork(); //注意fork后面的代码父子进程都会执行，这也意味着如果在后面设置sigaction那么父子进程都会受影响，在命令行按下Ctrl+c会分别向父子进程发送SIGINT，但使用kill则可以指定进程
     sa.sa_handler = F_SignChild;
     sigaction(SIGCHLD, &sa, NULL); //设置子进程退出时执行的函数
+
+    pid_t pid = fork(); //注意fork会完整复制进程，这也意味着命令行按下Ctrl+c会分别向父子进程发送SIGINT，但使用kill则可以指定进程
+    alarm(1); //设置每隔多少秒就发出SIGALRM信号，如果参数为0则取消之前的定时，如果没有设置信号处理函数则直接终止进程
     if (pid == 0)
     {
         printf("I'm child %d\n", getpid());
-        sleep(5);
+        sleep(3);
         return 1;
     }
     else
     {
         printf("I'm parent %d, my child is %d\n", getpid(), pid);
-        for (int i = 1; i<=10; i++)
+        for (int i = 1; i<=5; i++)
         {
             printf("sleep %d\n", i);
             sleep(1);
         }
     }
 
+    puts("main() return");
 }

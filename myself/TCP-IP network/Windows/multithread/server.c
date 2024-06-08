@@ -14,7 +14,7 @@
 #define CLI_NAME 20 //客户端id
 #define BUF_SIZE 1024 //信息大小
 
-void *Client(void *); //每个客户端连接后创键的线程
+void *TdClient(void *); //每个客户端连接后创键的线程
 
 pthread_mutex_t mutex; //锁住临界区，也就是下方的cli全局变量
 SOCKET cliarr[CLI_MAX]; //客户端群组和其数量
@@ -55,10 +55,10 @@ int main(int argc, char *args[])
         pthread_mutex_lock(&mutex);
         cliarr[clicount++] = clisock;
         pthread_mutex_unlock(&mutex);
-        pthread_create(&pth, NULL, Client, (void *)&clisock);
+        pthread_create(&pth, NULL, TdClient, (void *)&clisock);
         pthread_detach(pth);
         recv(clisock, name, CLI_NAME, 0);
-        printf("Server: connecting client %d, id: %s, ip: %s\n", clicount, name, inet_ntoa(cliaddr.sin_addr));
+        printf("Server: client %d connect, id: %s, ip: %s - there are %d client(s)\n", clisock, name, inet_ntoa(cliaddr.sin_addr), clicount);
     }
 
     closesocket(sersock);
@@ -66,7 +66,7 @@ int main(int argc, char *args[])
     return 0;
 }
 
-void *Client(void *arg)
+void *TdClient(void *arg)
 {
     SOCKET sock = *(SOCKET *)arg; //客户端的套接字
     int len;
@@ -75,27 +75,29 @@ void *Client(void *arg)
     while (1) //循环接收客户端信息并响应
     {
         len = recv(sock, msg, BUF_SIZE, 0);
-        if (len>0) { //正常，发送信息至所有客户端
+        if (len > 0) { //正常，发送信息至所有客户端
             pthread_mutex_lock(&mutex);
-            for (int i = 0; i<clicount; i++)
+            for (int i = 0; i < clicount; i++)
             {
                 send(cliarr[i], msg, len, 0);
             }
             pthread_mutex_unlock(&mutex);
         }
-        else { //异常，清除客户端相关内存
+        else { //关闭或异常，清除客户端相关内存
             pthread_mutex_lock(&mutex);
             for (int i = 0; i < clicount; i++)
             {
-                if (cliarr[i]==sock) {
+                if (cliarr[i] == sock) {
                     cliarr[i] = cliarr[--clicount];
                     break;
                 }
             }
             pthread_mutex_unlock(&mutex);
-            closesocket(sock);
-            if (len==SOCKET_ERROR) //recv错误，发送错误信息
-                printf("recv() error! errno: %d, WSAErrorCode: %d\n", errno, WSAGetLastError());
+            if (!len) //客户端正常关闭
+                printf("Server: client %d closed\n", sock);
+            else //recv错误，发送错误信息
+                printf("recv() error! WSAErrorCode: %d\n", WSAGetLastError());
+            closesocket(sock); //拿到GetError的后方，因为调用套接字相关函数后会重置error码
             return NULL;
         }
     }

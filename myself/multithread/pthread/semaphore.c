@@ -3,10 +3,11 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <semaphore.h>
-//信号量机制相当于将资源数封装了的条件变量机制，依旧使用消费生成模型，信号量的资源数量是自带的而无需像条件变量一样需要手动设置条件，当资源为0时造成阻塞
-//如果资源数量大于1，则依旧需要互斥量来使得线程串行运行，因为生产者和消费者可能同时读写资源造成崩溃；互斥锁应该放在信号锁中间，否则会造成死锁
+//信号量机制相当于将资源数封装了的条件变量机制，依旧使用消费生成模型，信号量的资源数量是自带的而无需像条件变量一样需要手动设置条件，当资源<=0时造成阻塞
+//如果起始资源数量大于1，则可能需要互斥量来使得线程串行运行，因为生产者和消费者可能同时读写资源造成崩溃；互斥锁应该放在信号锁中间，否则会造成死锁
+//信号量为正表示可以有n个线程进入或解除阻塞，为0则刚好没有资源也没有等待的线程，为负表示有n个线程在等待sem
 sem_t sempro, semcus;
-pthread_mutex_t mut = PTHREAD_MUTEX_DEFAULT;
+pthread_mutex_t mut = PTHREAD_NORMAL_MUTEX_INITIALIZER;
 struct Node
 {
     int num;
@@ -15,17 +16,18 @@ struct Node
 struct Node *head = NULL;
 size_t count = 0;
 const size_t MAX_COUNT = 10;
-// count为货物的剩余数，n为每个线程的生成或消费数，sum是总的消费或生产数
 
+// count为货物的剩余数，n为每个线程的生产或消费数，sum是总的生产或消费数
 void *Func_pro(void *arg)
 {
     size_t n = 0;
     static size_t sum = 0;
     while (1)
     {
+        // int a; sem_getvalue(&sempro, &a); printf("a = %d|", a);
         struct Node *node = (struct Node *)malloc(sizeof(struct Node));
         sem_wait(&sempro); //消耗一个sempro资源数，如果没有资源则阻塞，trywait则返回错误码而不阻塞，timedwait同cond_timedwait，不过只有资源为0时才会阻塞
-        pthread_mutex_lock(&mut); //注意需要在内部加互斥锁防止并行读写数据
+        pthread_mutex_lock(&mut); //注意依旧需要为临界区加互斥锁防止并行读写数据，因为可能有多个信号量资源被获取
         node->next = head;
         head = node;
         node->num = ++n;
@@ -62,8 +64,9 @@ int main()
     sem_init(&semcus, 0, cusresource);
     //参数2为0是多线程，非0是多进程，参数3是初始资源个数，两个信号量的资源数之和即为总资源数
     srand(time(NULL));
-    int procount = 5, cuscount = 5;
+    int procount = 5, cuscount = 3;
     pthread_t propt[procount], cuspt[cuscount];
+
     for (size_t i = 0; i < procount; i++)
     {
         pthread_create(&propt[i], NULL, Func_pro, NULL);
@@ -73,6 +76,7 @@ int main()
     {
         pthread_create(&cuspt[i], NULL, Func_cus, NULL);
     }
-    sleep(2);
+
+    usleep(RAND_MAX * 20);
     return 0;
 }

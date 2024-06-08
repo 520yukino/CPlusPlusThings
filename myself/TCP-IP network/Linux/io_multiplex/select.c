@@ -6,15 +6,16 @@
 int main()
 {
     fd_set frd, fwr, ftemp[2]; //设置需要监视的文件描述符时所需要的结构变量，frd和fwr为读和写的fd，ftemp作为临时fd在select函数参数中很重要
+    //这里是将输入fd和输出fd都装进ftemp数组中，后续select使用时将其分别传参，当然也可以分别设2个ftemp一一对应
     int res, len;
     const int SIZE = 1024;
     char buf[SIZE];
     struct timeval timeout; //设置监视的超时时间
 
     FD_ZERO(&frd); //所有位置0
-    FD_SET(0, &frd); //将0号描述符置1，这是标准输入
+    FD_SET(STDIN_FILENO, &frd); //将0号描述符置1，这是标准输入
     FD_ZERO(&fwr);
-    FD_SET(1, &fwr);
+    FD_SET(STDOUT_FILENO, &fwr);
 
     while (1)
     {
@@ -29,7 +30,7 @@ int main()
         参数2到4都是fd_set *，它们分别表示需要监视的输入fd、输出、异常(但不包括错误)，没有就传0，当监视到传入的描述符中有对应事件时就保留这个描述符对应的标志位，其它没有事件的则置0
         参数5设置超时时间，用法如下：1. timeout=NULL(阻塞：直到有一个fd位被置为1函数才返回) 2. timeout所指向的结构设为非零时间(等待：有一个fd位被置为1或者时间耗尽，函数均返回) 3. timeout所指向的结构，时间设为0(非阻塞：函数轮训检查完需要监视的fd后立即返回)
         函数返回值为-1为出错，0为超时，正数为监视到发送了事件的fd个数
-        就本例而言，可读意味着需要有用户输入到输入缓冲区，而可写却是一直存在，可读写的本质是读写不阻塞，所以监视了输出fd的select永远不会超时，因为始终可写
+        就本例而言，可读意味着需要有用户输入到输入缓冲区，而可写却是一直存在，可读写的本质是读写不阻塞，所以监视了输出fd的select永远不会超时，因为始终可写；同时，不超时并不意味着函数会直接返回，没有输出时依旧会阻塞
         */
         if (res == -1) {
             puts("select error!");
@@ -39,9 +40,9 @@ int main()
             puts("select timeout...");
         }
         else {
-            if (FD_ISSET(0, &frd)) { //如果stdin在frd中的标志为1则说明有数据可以读入
-                len = read(0, buf, SIZE-1);
-                buf[len] = 0;
+            if (FD_ISSET(STDIN_FILENO, &frd)) { //如果stdin在frd中的标志为1则说明有数据可以读入
+                len = read(STDIN_FILENO, buf, SIZE-1);
+                buf[len] = '\0';
                 printf("message: %s", buf);
             }
         }

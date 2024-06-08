@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <winsock2.h>
-#include <in6addr.h>
-
+/* 测试套接字的多种可选项 */
 #define ErrorPuts(s) { \
     fputs(s, stderr); \
     fputc('\n', stderr); \
@@ -22,7 +21,7 @@ int main(int argc, char *args[])
     if ((udpsock = socket(PF_INET, SOCK_DGRAM, 0)) == INVALID_SOCKET)
         ErrorPuts("socket() 2 failed!");
 
-    //getsockopt函数是获取某一套接字的选项，SOL_SOCKET为套接字选项组，IPPROTO_IP和IPPROTO_TCP是IP层和传输层的选项组，其中SO_TYPE为套接字选项组中的套接字连接类型
+    //getsockopt函数是获取某一套接字的选项，SOL_SOCKET为套接字选项组，IPPROTO_IP和IPPROTO_TCP是IP层和传输层的选项组，其中SO_TYPE为套接字选项组中的套接字连接类型。参数4是期望获取的选项值，此值可能有多种类型，所以通过万用指针传出，可以使用一个缓冲区来储存它。参数5传入参数4的缓冲区大小，如果太小则函数返回-1，调用后再返回参数4传出的数据的大小
     if (getsockopt(tcpsock, SOL_SOCKET, SO_TYPE, (char *)&tcpopt, &len))
         ErrorPuts("getsockopt() 1 error!");
     if (getsockopt(udpsock, SOL_SOCKET, SO_TYPE, (char *)&udpopt, &len))
@@ -30,20 +29,20 @@ int main(int argc, char *args[])
     printf("SOCK_STREAM = %d, SOCK_DGRAM = %d\n", SOCK_STREAM, SOCK_DGRAM);
     printf("TCP SO_TYPE = %d, UDP SO_TYPE = %d\n", tcpopt, udpopt);
 
-    //setsockopt函数是设置某一套接字的选项，此处SO_SNDBUF和SO_RCVBUF为输出缓冲区大小和输入缓冲区大小，注意设置后并不意味着一定为这个大小，系统自有决断
-    tcpopt = 0, udpopt = 1000000000;
-    puts("TCP socket:");
+    //setsockopt函数是设置某一套接字的选项，此处SO_SNDBUF和SO_RCVBUF为输出缓冲区大小和输入缓冲区大小，注意设置后并不意味着一定为这个大小，系统自有决断。相较于get函数，它的参数4和5只作选项指定，不作返回
+    tcpopt = 3333, udpopt = 2000000000;
+    puts("default bufsize:");
     ShowSocketBufferSize(tcpsock);
     ShowSocketBufferSize(udpsock);
     if (setsockopt(tcpsock, SOL_SOCKET, SO_SNDBUF, (char *)&tcpopt, len))
         ErrorPuts("setsockopt() 1 error!");
     if (setsockopt(udpsock, SOL_SOCKET, SO_RCVBUF, (char *)&udpopt, len))
         ErrorPuts("setsockopt() 2 error!");
-    puts("UDP socket:");
+    puts("the set bufsize:");
     ShowSocketBufferSize(tcpsock);
     ShowSocketBufferSize(udpsock);
 
-    //SO_REUSEADDR为是否允许直接复用处于TIME_WAIT状态的端口，默认为0不可复用，但实验表明可以复用，待探究
+    //SO_REUSEADDR为是否允许直接复用处于TIME_WAIT状态的端口，默认值为0表示不可复用，需要手动设置为1
     if (getsockopt(tcpsock, SOL_SOCKET, SO_REUSEADDR, (char *)&tcpopt, &len))
         ErrorPuts("getsockopt() 3 error!");
     printf("TCP SO_REUSEADDR = %d\n", tcpopt);

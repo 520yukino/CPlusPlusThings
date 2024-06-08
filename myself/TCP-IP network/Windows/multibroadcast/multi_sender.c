@@ -16,7 +16,7 @@ int main(int argc, char *args[])
     int addrsize = sizeof(multiaddr);
     const int SIZE = 1024;
     char *buf = (char *)malloc(SIZE);
-    int ttl = 64; //最大生存时间，即数据包在路由器间的传递最大次数
+    int ttl = 64; //最大生存时间，即数据包在路由器间的传递最大次数，注意每传递到一个路由器TTL就会减1，为0则无法继续传递，所以传递路由器数的最大值应为TTL-1
     FILE *fp;
 
     if (argc != 3) //需要传入多播IP和端口号
@@ -33,9 +33,14 @@ int main(int argc, char *args[])
     multiaddr.sin_family = AF_INET;
     multiaddr.sin_addr.S_un.S_addr = inet_addr(args[1]);
     multiaddr.sin_port = htons(atoi(args[2]));
-    if (connect(multisock, (SOCKADDR *)(&multiaddr), addrsize) == SOCKET_ERROR) //持续使用多播地址
+    if (connect(multisock, (SOCKADDR *)(&multiaddr), addrsize) == SOCKET_ERROR) //持续使用多播地址来发送信息
         ErrorPuts("connect() failed!");
-    setsockopt(multisock, IPPROTO_IP, IP_MULTICAST_TTL, (char *)(&ttl), sizeof(ttl)); //设置多播模式，多播属于IP层，需要传入TTL以设置生存时间
+    //多播模式本质上就是传递信息到加入了对应多播地址的接收端，由于TTL默认值为1，所以需要单独设置为更大值(本机传输无所谓)
+    setsockopt(multisock, IPPROTO_IP, IP_MULTICAST_TTL, (char *)(&ttl), sizeof(ttl));
+    //下面是查看TTL的默认值代码
+    // int ii = sizeof(ttl);
+    // int res = getsockopt(multisock, IPPROTO_IP, IP_MULTICAST_TTL, (char *)(&ttl), &ii);
+    // printf("%d, %d\n", res, ttl);
     if ((fp = fopen("buf.txt", "r")) == NULL)
         ErrorPuts("fopen() failed!");
 

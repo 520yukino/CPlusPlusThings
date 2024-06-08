@@ -40,13 +40,14 @@ int main(int argc, char *args[])
     puts("Server: receive begin");
     for (int i = 1; i <= SERVER_COUNT; i++) //循环服务接收数据并回复
     {
-        res = recvfrom(sersock, message, SIZE, 0, (SOCKADDR *)(&cliaddr), &szcliaddr); //通知客户端已联通，注意发送数据不会等待对方的接收，而是直接发送至自身的输出缓冲区后就返回，之后输出缓冲区会发送至对方的输入缓冲区中等待对方recv读入
+        res = recvfrom(sersock, message, SIZE, 0, (SOCKADDR *)(&cliaddr), &szcliaddr); //接收客户端信息
         if (res == SOCKET_ERROR)
         {
             ErrorPuts("recv() failed!");
             break;
         }
         printf("Message %d of %d byte(s): %s\n", i, res, message);
+        Sleep(1000);
         sendto(sersock, reply, sizeof(reply), 0, (SOCKADDR *)(&cliaddr), szcliaddr); //通知客户端接收完毕
     }
     printf("Server: receive over\n");

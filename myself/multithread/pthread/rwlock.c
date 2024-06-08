@@ -16,26 +16,23 @@ void *thread_Func_rd(void *arg)
     {
         pthread_rwlock_rdlock(&rwlock);
         //rd为读锁，wr为写锁
-        usleep(100);
-        printf("in thread func1, i = %d, a = %d\n", i, a);
+        printf("in func_rd: i = %d, a = %d\n", i, a);
         pthread_rwlock_unlock(&rwlock);
         //解锁均为unlock
+        usleep(rand()%100);
     }
     return NULL;
 }
 
 void *thread_Func_wr(void *arg)
 {
-    int m; 
     for (size_t i = 1; i <= 10; i++)
     {
         pthread_rwlock_wrlock(&rwlock);
-        m = a;
-        m++;
-        usleep(100);
-        a = m;
-        printf("in thread func2, i = %d, a = %d\n", i, a);
+        a++;
+        printf("in func_wr: i = %d, a = %d\n", i, a);
         pthread_rwlock_unlock(&rwlock);
+        usleep(rand()%100);
     }
     return NULL;
 }
@@ -44,7 +41,7 @@ int main()
 {
     pthread_rwlockattr_t ma = PTHREAD_RWLOCK_INITIALIZER;
     pthread_rwlock_init(&rwlock, &ma);
-    int ptnum1 = 7, ptnum2 = 3; //7个线程读，3个写
+    int ptnum1 = 5, ptnum2 = 3; //7个线程读，3个写
     pthread_t p1[ptnum1], p2[ptnum2];
 
     for (size_t i = 0; i < ptnum1; i++)

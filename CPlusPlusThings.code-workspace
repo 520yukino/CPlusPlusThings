@@ -122,7 +122,10 @@
             "_timeval.h": "c",
             "windows.h": "c",
             "sql.h": "c",
-            "string.h": "c"
+            "string.h": "c",
+            "cerrno": "cpp",
+            "_wsa_errnos.h": "c",
+            "apiset.h": "c"
         },
         "C_Cpp.vcFormat.space.pointerReferenceAlignment": "right"
     },

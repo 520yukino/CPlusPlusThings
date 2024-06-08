@@ -8,9 +8,10 @@ void *thread_Fun(void *arg)
     printf("新建线程开始执行\n");
     for (size_t i = 1; i <= 10; i++)
     {
-        usleep(500000);
+        usleep(300000);
         printf("in children thread, i = %d\n", i);
         pthread_testcancel(); //此为测试是否需要强制终止，如果没有这个函数则不会强制终止
+        //此处需要注意win和linux下的不同点，win下的cancel函数必须配合此函数来完成子线程的退出；而linux下还可以在阻塞处直接退出，例如输入输出函数，这里遇见printf后不打印并直接退出
     }
     return NULL;
 }
@@ -35,7 +36,8 @@ int main()
         printf("终止 myThread 线程失败\n");
         return 0;
     }
-    // 获取已终止线程的返回值，注意此处的join依旧会等待子线程，除非被强制终止
+    sleep(1);
+    // 获取已终止线程的返回值，此处的join对强制终止和一般退出的线程的反映是一致的
     res = pthread_join(myThread, &mess);
     if (res != 0)
     {

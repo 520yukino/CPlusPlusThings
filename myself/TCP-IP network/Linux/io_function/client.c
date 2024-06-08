@@ -16,9 +16,9 @@ int main(int argc, char *args[])
     int clisock;
     struct sockaddr_in seraddr;
     const int SIZE = 1024;
-    char *message = (char *)malloc(SIZE);
-    message = "I'm client, Hello World!";
     char *buf = (char *)malloc(SIZE);
+    char *message[] = {"I'm client, Hello World!", "urgmsg 1", "urgmsg 2"};
+    int msglen[] = {strlen(message[0]), strlen(message[1]), strlen(message[2])};
 
     if (argc != 3)
     {
@@ -44,14 +44,17 @@ int main(int argc, char *args[])
     if (read(clisock, buf, SIZE) == -1)
         errorputs("recv() failed!");
     printf("Reply from server: %s\n", buf);
-    puts("send 1");
-    write(clisock, message, SIZE);
-    send(clisock, "urgmsg 1", SIZE, MSG_OOB); //发送紧急信息，out-of-band带外传输数据
-    write(clisock, message, SIZE);
-    send(clisock, "urgmsg 2", SIZE, MSG_OOB);
-    write(clisock, message, SIZE);
-    puts("send 2");
-    sleep(1);
+    puts("send begin");
+    write(clisock, message[0], msglen[0]);
+    usleep(1000);
+    send(clisock, message[1], msglen[1], MSG_OOB); //发送紧急信息，out-of-band带外传输数据
+    usleep(1000);
+    write(clisock, message[0], msglen[0]);
+    usleep(1000);
+    send(clisock, message[2], msglen[2], MSG_OOB);
+    usleep(1000);
+    write(clisock, message[0], msglen[0]);
+    puts("send over");
 
     shutdown(clisock, SHUT_WR);
     if (read(clisock, buf, SIZE) == -1)

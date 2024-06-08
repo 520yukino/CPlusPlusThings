@@ -51,41 +51,43 @@ int main(int argc, char *args[])
         fdtemp = fd;
         timeout.tv_sec = 5;
         timeout.tv_usec = 0;
-        if ((fdnum = select(0, &fdtemp, NULL, NULL, &timeout)) == -1) //监视服务端的输入，参数1无意义，仅为了兼容Linux版，参数2到4分别为可读、可写、异常(注意异常不是错误)，参数5设置超时时间
+        //监视服务端的输入，参数1无意义，仅为了兼容Linux版，参数2到4分别为可读、可写、异常(注意异常不是错误)，它们会直接返回只包含发生事件的fd集合，参数5设置超时时间
+        if ((fdnum = select(0, &fdtemp, NULL, NULL, &timeout)) == -1)
             ErrorPuts("select() failed!");
         else if (fdnum == 0) {
             puts("timeout...");
             continue;
         }
-        for (int i = 0; i<fd.fd_count; i++) //查询所有可读的fd
+        printf("-- select return, fdnum = %d\n", fdnum);
+        for (int i = 0; i<fdtemp.fd_count; i++) //直接轮询所有可读的fd
         {
-            sock = fd.fd_array[i];
-            if (FD_ISSET(sock, &fdtemp)) {
-                if (sock == sersock) { //服务器fd可读，说明有客户端请求连接
-                    if ((clisock = accept(sersock, (struct sockaddr*)(&cliaddr), &szcliaddr)) == -1) {
-                        puts("accept() failed!");
-                        continue;
-                    }
-                    printf("new client %llu\n", clisock);
-                    send(clisock, reply_1, sizeof(reply_1), 0);
-                    FD_SET(clisock, &fd); //设置客户端的fd
+            sock = fdtemp.fd_array[i];
+            // printf("%d:%d,%d | ", i, fd.fd_count, fdtemp.fd_count); fflush(stdout);
+            //无需再使用FD_ISSET，因为fdtemp中只包含发生事件的fd
+            if (sock == sersock) { //服务器fd可读，说明有客户端请求连接
+                if ((clisock = accept(sersock, (struct sockaddr*)(&cliaddr), &szcliaddr)) == -1) {
+                    puts("accept() failed!");
+                    continue;
                 }
-                else { //客户端fd可读，意味着客户端发送了信息
-                    if ((len = recv(sock, message, SIZE, 0)) == -1) { //输入出错，需要清除出错的客户端以免死循环
-                        printf("client %llu read() failed!\n", sock);
-                        closesocket(sock);
-                        FD_CLR(sock, &fd);
-                        continue;
-                    }
-                    else if (len == 0) { //客户端正常关闭
-                        send(sock, reply_2, sizeof(reply_2), 0);
-                        closesocket(sock);
-                        FD_CLR(sock, &fd);
-                        printf("close client %llu\n", sock);
-                    }
-                    else {
-                        printf("message from client %llu of %d byte: %s\n", sock, len, message);
-                    }
+                printf("new client %llu\n", clisock);
+                send(clisock, reply_1, sizeof(reply_1), 0);
+                FD_SET(clisock, &fd); //设置客户端的fd
+            }
+            else { //客户端fd可读，意味着客户端发送了信息
+                if ((len = recv(sock, message, SIZE, 0)) == -1) { //输入出错，需要清除出错的客户端以免死循环
+                    printf("client %llu read() failed!\n", sock);
+                    closesocket(sock);
+                    FD_CLR(sock, &fd);
+                    continue;
+                }
+                else if (len == 0) { //客户端正常关闭
+                    send(sock, reply_2, sizeof(reply_2), 0);
+                    closesocket(sock);
+                    FD_CLR(sock, &fd);
+                    printf("close client %llu\n", sock);
+                }
+                else {
+                    printf("message from client %llu of %d byte: %s\n", sock, len, message);
                 }
             }
         }

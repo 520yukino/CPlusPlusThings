@@ -6,10 +6,10 @@
     2、若T为函数类型F或者它的引用，则decay<T>::type为std::add_pointer<F>::type
     3、否则，decay<T>::type为std::remove_cv<std::remove_reference<T>::type>::type
 */
+//decay_equiv通过比较decay<T>::type和U来判定decay后的T与原始U是否相同，借此表明decay的作用
 template <typename T, typename U>
-struct decay_equiv : std::is_same<typename std::decay<T>::type, U>::type
-{
-};
+struct decay_equiv: std::is_same<typename std::decay<T>::type, U>::type
+{};
 
 int main()
 {

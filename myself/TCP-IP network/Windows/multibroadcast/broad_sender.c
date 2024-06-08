@@ -33,7 +33,7 @@ int main(int argc, char *args[])
     broadaddr.sin_family = AF_INET;
     broadaddr.sin_addr.S_un.S_addr = inet_addr(args[1]);
     broadaddr.sin_port = htons(atoi(args[2]));
-    //设置广播模式开启(这里是默认开启的)，广播与普通UDP唯一的不同点就是这里，注意广播如果不置主机ID的所有位为1则就相当于普通的UDP，所以使用192.168.0.103、192.168.0.255、255.255.255.255都可以发送给本机
+    //设置广播模式开启(这里是默认开启的)，广播与普通UDP唯一的不同点就是这里，注意广播如果不置主机ID的所有位为1则就相当于普通的UDP，所以使用本机IP(UDP)、本机网络IP.255(直接广播)、255.255.255.255(本地广播)这3种IP都可以发送给本机
     if (setsockopt(broadsock, SOL_SOCKET, SO_BROADCAST, (char *)(&so_bro), sizeof(so_bro)) == SOCKET_ERROR)
         ErrorPuts("setsockopt()");
     if (connect(broadsock, (SOCKADDR *)(&broadaddr), addrsize) == SOCKET_ERROR) //持续使用广播地址

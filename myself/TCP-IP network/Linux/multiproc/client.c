@@ -4,6 +4,7 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+/* 相比于基本模型，这里使用多进程复制了多个客户端来同时连接，并在关闭客户端前等待了一些时间 */
 
 #define errorputs(s) do { \
     fputs(s, stderr); \
@@ -13,11 +14,12 @@
 
 int main(int argc, char *args[])
 {
-    int clisock; //套接字句柄
-    struct sockaddr_in seraddr; //套接字地址信息
-    char message[8888] = "I'm client, Hello World!";
+    int clisock;
+    struct sockaddr_in seraddr;
+    char message[] = "I'm client, Hello World!";
     const int SIZE = 1024;
     char *buf = (char *)malloc(SIZE);
+    pid_t pid;
 
     if (argc != 3) //需要传入IP和端口号
     {
@@ -25,37 +27,29 @@ int main(int argc, char *args[])
         exit(-1);
     }
     
-    if ((clisock = socket(PF_INET, SOCK_STREAM, 0)) == -1) //创建服务器端套接字
+    for (int i = 0; i < 3; i++) //2^循环次数=总进程数
+        pid = fork(); //需在创建套接字之前fork，因为套接字不能复制。由于客户端是在connect中自动绑定的，所以不会有端口冲突
+
+    if ((clisock = socket(PF_INET, SOCK_STREAM, 0)) == -1)
         errorputs("socket() failed!");
-    memset(&seraddr, 0, sizeof(seraddr)); //设置seraddr
+    memset(&seraddr, 0, sizeof(seraddr));
     seraddr.sin_family = AF_INET;
     seraddr.sin_addr.s_addr = inet_addr(args[1]);
     seraddr.sin_port = htons(atoi(args[2]));
 
-    // struct sockaddr_in cliaddr; //自行绑定客户端地址信息，如果客户端主动关闭连接，则客户端的此端口号会出入TIME_WAIT状态，一段时间内无法connect
-    // memset(&cliaddr, 0, sizeof(cliaddr));
-    // cliaddr.sin_family = AF_INET;
-    // cliaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    // cliaddr.sin_port = htons(50000); //使用固定端口时
-    // if (bind(clisock, (struct sockaddr*)(&cliaddr), sizeof(cliaddr)) == -1) //绑定套接字地址信息
-    //     errorputs("bind() failed!");
-
-    if (connect(clisock, (struct sockaddr *)(&seraddr), sizeof(seraddr)) == -1) //阻塞接受客户端的连接请求
+    if (connect(clisock, (struct sockaddr *)(&seraddr), sizeof(seraddr)) == -1) //多个进程同时连接一个服务端，
         errorputs("connect() failed");
-    if (read(clisock, buf, SIZE) == -1)
-        errorputs("read() failed!");
-    printf("Reply from server: %s\n", buf);
-    puts("send 1");
+    puts("Client: send message");
     write(clisock, message, sizeof(message));
-    puts("send 2");
-    // sleep(5);
-    // if (write(clisock, message, sizeof(message)) == -1) //与Windows不同，服务端关闭后使用收发函数不会出错
-    //     errorputs("write() failed!");
 
-    shutdown(clisock, SHUT_WR);
+    sleep(2);
     if (read(clisock, buf, SIZE) == -1)
         errorputs("read() failed!");
-    printf("Reply from server: %s\n", buf);
+    //此处需要注意，如果客户端使用close或中断来彻底关闭，并且之前没有使用read函数，那么服务端的读取操作会返回-1，但使用shutdown关闭或者调用了read则正常返回0，待探究
+    printf("From server: %s\n", buf); //由于只读入了1次服务端发来的数据，所以此处输出为服务端发来的第1个字符串
+    shutdown(clisock, SHUT_RDWR);
+    close(clisock);
+    usleep(10000); //等待所有子进程输出完毕
 
     return 0;
 }

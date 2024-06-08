@@ -4,7 +4,7 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-
+/* 服务端基本模型 */
 #define errorputs(s) do { \
     fputs(s, stderr); \
     fputc('\n', stderr); \
@@ -36,7 +36,7 @@ int main(int argc, char* args[])
     seraddr.sin_port = htons(atoi(args[1]));
     if (bind(sersock, (struct sockaddr*)(&seraddr), sizeof(seraddr)) == -1) //绑定套接字地址信息
         errorputs("bind() failed!");
-    if (listen(sersock, 5) == -1) //转为可接收状态
+    if (listen(sersock, 0) == -1) //转为可接收状态
         errorputs("listen() failed!");
     if ((clisock = accept(sersock, (struct sockaddr*)(&cliaddr), &szcliaddr)) == -1)
         errorputs("accept() failed!");
@@ -45,6 +45,7 @@ int main(int argc, char* args[])
     write(clisock, reply_1, sizeof(reply_1)); //通知客户端已联通
     if ((res = read(clisock, message, SIZE)) == -1)
         errorputs("recv() failed!");
+    
     printf("Message from client of %d byte(s): %s\n", res, message);
     puts("send reply_2");
     write(clisock, reply_2, sizeof(reply_2)); //通知客户端接收完毕

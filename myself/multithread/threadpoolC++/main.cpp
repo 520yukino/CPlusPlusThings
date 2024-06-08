@@ -37,7 +37,7 @@ int main()
 	// 	sleep(1);
 	// }
 	tp.Shutdown();
-	printf("*********************************\n\tShutdown and Run!\n*********************************\n");
+	puts("*************************\n    Shutdown and Run!\n*************************");
 
 	if (tp.Run())
 	{
@@ -52,6 +52,6 @@ int main()
 		}		
 	}
 
-	puts("Over");
+	puts("******************\n    main over!\n******************");
     return 0;
 }

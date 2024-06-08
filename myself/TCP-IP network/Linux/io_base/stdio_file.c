@@ -8,8 +8,8 @@ int main()
     FILE *fp1, *fp2;
     size_t len;
     char buf[SIZE];
-    fp1 = fopen("/mnt/d/YX/Soul diers/Souldiers.v1.2.3.rar", "rb");
-    fp2 = fopen("test.rar", "w");
+    fp1 = fopen("/mnt/d/YX/wuppo/Wup1.0.43.exe", "rb");
+    fp2 = fopen("test", "w");
     printf("%p, %p\n", fp1, fp2);
 
     struct timeval tv1, tv2; //储存当前的秒和微秒

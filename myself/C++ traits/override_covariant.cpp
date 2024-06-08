@@ -9,17 +9,17 @@ public:
 	{
 		return 0;
 	}
-	virtual CBase *Clone(void)
+	virtual CBase *Clone()
 	{
 		return new CBase;
 	}
-	virtual CBase &GetStatic(void)
+	virtual CBase &GetStatic()
 	{
 		static CBase StaticObj;
 		puts("in CBase::GetStatic");
 		return StaticObj;
 	}
-	void invoke() //基类的非虚方法内部可以调用多态方法，原理在于this指针，子对象调用invoke时传入的this指针为子对象而非基对象
+	void invoke() //基类方法内部可以调用多态方法，原理在于this指针，子对象调用invoke时传入的this指针为子对象而非基对象
 	{
 		GetStatic();
 	}
@@ -32,7 +32,7 @@ public:
 	{
 		return 100;
 	}
-	virtual CDerive1 *Clone(void)
+	virtual CDerive1 *Clone()
 	{
 		return new CDerive1;
 	}
@@ -50,15 +50,15 @@ public:
 	// virtual float DoJob(){ //返回类型协变只能适用于返回值为某种继承类，不能用于这种基本类型转换
 	// 	return 1.23f;
 	// }
-	virtual int DoJob(int) //而此处则是隐藏，因为参数不同，这种情况下CDerive2无法使用基类的DoJob()
+	virtual int DoJob(int) //而此处则是重写，因为参数不同，这种情况下CDerive2必须作用域解析来使用基类的DoJob()
 	{
 		return 200;
 	}
-	virtual CDerive2 *Clone(void)
+	virtual CDerive2 *Clone()
 	{
 		return new CDerive2;
 	}
-	CDerive2 &GetStatic(void) //虚函数当然可以隔代覆盖
+	CDerive2 &GetStatic() //虚函数当然可以隔代覆盖，此处使用了返回类型协变，只能传出继承函数返回类的子类而非其基类
 	{
 		static CDerive2 m_Static;
 		puts("in CDerive2::GetStatic");
@@ -77,19 +77,19 @@ public:
 class CTestVirtualDev1 : public CTestVirturalBase
 {
 public:
-	virtual CDerive1 *GetClone(void)
+	virtual CDerive1 *GetClone()
 	{
 		return new CDerive1;
 	}
-	virtual CDerive1 &GetStatic(void)
+	virtual CDerive1 &GetStatic()
 	{
 		static CDerive1 StaticObj;
 		return StaticObj;
 	}
-	// virtual CBase* GetBase(void){ //协变只能返回基类中对应的虚函数的返回类的子类，思考多态调用时使用基类对象获取返回值，必须这样规定防止bug
+	// virtual CBase* GetBase(){ //协变只能返回基类中对应的虚函数的返回类的子类，思考多态调用时使用基类对象获取返回值，必须这样规定防止bug
 	// 	return new CBase;
 	// }
-	// virtual CDerive1 *GetBase(void) = delete; //子类不能删除继承于基类的虚函数，因为多态时会出错
+	// virtual CDerive1 *GetBase() = delete; //子类不能删除继承于基类的虚函数，因为多态时会出错
 };
 
 // 隐藏hiding，下层类对上层同名函数进行隐藏，必须使用作用域解析才能访问隐藏函数；覆盖重写override，虚函数重写，产生函数多态
@@ -98,18 +98,16 @@ void func(const char *s)
 	cout << "global function with name:" << s << endl;
 }
 
-class B;
 class A
 {
 	A *pa;
-	B *pb;
 	void func()
 	{
 		cout << "member function of A" << endl;
 	}
 
 public:
-	A() {pa = this;} //如果是创建B对象的过程，则此处的this指向B对象而非A对象，即创建谁就指向谁
+	A() {pa = this;} //如果是创建B对象的过程，则此处的this是由B的构造传来的指向B对象的指针而非A对象，即创建谁就指向谁
 	A(int) {A::~A();} //构造函数可以调用析构函数，因为析构函数只是执行函数体中的内容，不会删除对象
 	~A() {}
 	void useFunc()
@@ -120,15 +118,16 @@ public:
 	}
 	virtual void print()
 	{
-		cout << "A's print" << endl;
-		pa->print(); //基类可以通过多态调用子类的虚函数
+		cout << "A's print()" << endl;
+		pa->print(); //基类可以通过多态调用子类的虚函数，注意此处如果A调用则会死循环
 	}
 };
 
 class B : public A
 {
 public:
-	B(): A() {}
+	B() {}
+	static B Get() {return B();}
 	void useFunc()
 	{ // 隐藏A::vodi useFunc()
 		cout << "B's useFunc()" << endl;
@@ -148,26 +147,32 @@ public:
 	}
 };
 
+void F(B b){}
 int main()
 {
 	CBase c1;
 	CDerive1 c2;
 	CDerive2 c3;
 	CBase &rc1 = c3;
+	puts("-- 1 --");
 	rc1.GetStatic();
 	c3.invoke();
+	puts("-- 2 --");
 	cout << c2.DoJob() << endl;
 	cout << c3.DoJob(1) << endl;
+	cout << c3.CBase::DoJob() << endl;
 	cout << rc1.DoJob() << endl; //CDerive2的DoJob(int)无法多态调用，因为基类没有这样的函数
 
 	// CTestVirtualDev1 ct1; //不允许使用抽象类类型CTestVirtualDev1的对象，原因在于CTestVirturalBase中的纯虚函数没有全部被覆盖，导致CTestVirtualDev1拥有纯虚函数进而判定为ABC
+	puts("-- 3 --");
 	A a;
-	a.useFunc();
 	B b;
+	a.useFunc();
 	b.useFunc(); // A::useFunc()被B::useFunc()隐藏
 	b.A::useFunc();
 	b.useFunc(2);
 
+	puts("-- 4 --");
 	b.print();
 	b.A::print();
 	b.print("jf");

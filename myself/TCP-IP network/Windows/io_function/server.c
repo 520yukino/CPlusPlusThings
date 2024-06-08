@@ -50,7 +50,7 @@ int main(int argc, char *args[])
     FD_SET(clisock, &fd[0]); //设置服务端的可读和异常fd
     FD_SET(clisock, &fd[1]);
 
-    while (1) //服务端与客户端循环连接的主体
+    while (1) //由于没有编写服务端循环连接的代码，此处实则只连接1个客户端就关闭
     {
         fdtemp[0] = fd[0];
         fdtemp[1] = fd[1];

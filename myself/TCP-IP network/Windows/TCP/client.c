@@ -14,7 +14,7 @@ int main(int argc, char *args[])
     WSADATA wsadata;
     SOCKET clisock; //套接字句柄
     SOCKADDR_IN seraddr; //套接字地址信息
-    char message[5000] = "I'm client, Hello World!";
+    char message[] = "I'm client, Hello World!";
     const int SIZE = 1024;
     char *buf = (char *)malloc(SIZE);
 
@@ -45,12 +45,12 @@ int main(int argc, char *args[])
         send(clisock, message, sizeof(message), 0); //通知客户端接收完毕，send不会等待对方接收
         Sleep(200);
     }
-    send(clisock, "quit", 5, 0);
+    send(clisock, "quit", 5, 0); //仅仅只是为了配合服务端退出接收循环
     puts("Client: send over");
     ///注意客户端的输出流关闭后进行send输出操作会破坏掉CLOSE_WAIT状态，彻底断开连接，进而使得recv和第二次send出错，所以服务器退出接收循环后不要再send
-    if (recv(clisock, buf, SIZE, 0) == SOCKET_ERROR) //从服务器端接收数据
-        ErrorPuts("recv() failed!");
-    printf("Reply from server: %s\n", buf);
+    // if (recv(clisock, buf, SIZE, 0) == SOCKET_ERROR) //从服务器端接收数据
+    //     ErrorPuts("recv() failed!");
+    // printf("Reply from server: %s\n", buf);
 
     closesocket(clisock);
     WSACleanup();

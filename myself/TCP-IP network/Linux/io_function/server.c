@@ -66,21 +66,13 @@ int main(int argc, char* args[])
 
     puts("send reply_1");
     write(clisock, reply_1, sizeof(reply_1));
+    // while ((res = recv(clisock, message, SIZE, MSG_OOB)) != 0) //不能直接使用OOB，因为这是非阻塞的，没有OOB时会返回-1，应使用信号处理进行触发式使用
     while ((res = read(clisock, message, SIZE)) != 0)
     {
         if (res == -1)
             errorputs("read() failed!");
         printf("Message from client of %d byte: %s\n", res, message);
     }
-    // while ((res = recv(clisock, message, SIZE, MSG_OOB)) != 0)
-    // {
-    //     if (res == -1) {
-    //         perror("recv()");
-    //         exit(-1);
-    //     }
-    //     printf("Message from client of %d byte: %s\n", res, message);
-    // }
-
     puts("send reply_2");
     write(clisock, reply_2, sizeof(reply_2));
    

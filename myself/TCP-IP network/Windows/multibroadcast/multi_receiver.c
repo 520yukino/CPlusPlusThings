@@ -49,9 +49,9 @@ int main(int argc, char *args[])
             continue;
         }
         buf[res] = '\0';
-        fputs(buf, stdout);
+        printf("recv %d byte(s): %s\n", res, buf);
     }
-    puts("Client: recv over");
+    puts("Receiver: recv over");
    
     closesocket(recvsock);
     WSACleanup();
